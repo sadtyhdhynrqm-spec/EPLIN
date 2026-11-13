@@ -59,16 +59,21 @@ module.exports = {
             const cmd = commands[input.toLowerCase()];
             if (!cmd) return api.sendMessage(`❌ لم يتم العثور على الأمر "${input}"`, threadID, messageID);
 
-            let detailMsg = `> ˼🌌˹↜ تـفـاصـيـل الأمـر ↶\n`;
-            detailMsg += `╮──────────────⟢ـ\n`;
-            detailMsg += `┆˼🧭˹┊ الـإســم ↜｢ ${cmd.name} ｣\n`;
-            detailMsg += `┆˼⚕️˹┊ الـوصـف ↜｢ ${cmd.description || 'لا يوجد وصف'} ｣\n`;
-            detailMsg += `┆˼🌁˹┊ الـمؤلـف ↜｢ ${cmd.author} ｣\n`;
-            detailMsg += `┆˼🕕˹┊ الـإصـدار ↜｢ ${cmd.version} ｣\n`;
-            if (cmd.guide) {
-                detailMsg += `┆˼📖˹┊ الـطـريـقـة ↜｢ ${cmd.name} ${args[0]} ｣\n`;
+            let detailMsg = ``;
+            detailMsg += `╮────∙⋆⋅「 تفاصيل 」⋅⋆∙────╭\n`;
+            detailMsg += `│\n`;
+            detailMsg += `│  ◈ الاســم : ${cmd.name}\n`;
+            detailMsg += `│  ◈ الوصــف : ${cmd.description || 'لا يوجد وصف'}\n`;
+            detailMsg += `│  ◈ الـمؤلـف : ${cmd.author || 'غير محدد'}\n`;
+            detailMsg += `│  ◈ الـإصـدار : ${cmd.version || '1.0.0'}\n`;
+            if (cmd.guide || cmd.syntax) {
+                detailMsg += `│  ◈ الاستخدام : ${cmd.syntax || `${cmd.name} ${args[0]}`}\n`;
             }
-            detailMsg += `╯──────────────⟢ـ`;
+            detailMsg += `│  ◈ الـمـدة : ${cmd.countDown || 5} ثوانٍ\n`;
+            detailMsg += `│  ◈ المطــور : سينكو\n`;
+            detailMsg += `│\n`;
+            detailMsg += `╯───────∙⋆⋅ ※ ⋅⋆∙───────╰`;
+            
             return api.sendMessage(detailMsg, threadID, messageID);
         }
 
@@ -90,16 +95,17 @@ module.exports = {
 
         const orderedCats = ['المجموعة', 'الصور', 'الوسائط', 'الذكاء الاصطناعي', 'الترفيه', 'المطور', 'الأدوات'];
 
-        // --- بناء رسالة القائمة ---
-        let msg = `> ˼⏰˹↜ الـتـوقـيـت ↶\n`;
-        msg += `╮──────────────⟢ـ\n`;
-        msg += `┆˼🧭˹┊ ↜｢ ${dateStr} ｣\n`;
-        msg += `┆˼❄️˹┊ النـشـاط ↜｢ ${clockStr} ｣\n`;
-        msg += `┆˼🌁˹┊ الـيـوم ↜｢ ${dayStr} ｣\n`;
-        msg += `┆˼🕕˹┊ الـوقـت ↜｢ ${timeStr} ｣\n`;
-        msg += `╯──────────────⟢ـ\n`;
-        msg += `> ˼🌌˹↜ أّوٌأّمًـر APLIN ↶\n`;
-        msg += `╮──────────────⟢ـ\n`;
+        // --- بناء رسالة القائمة بالزخرفة الجديدة ---
+        let msg = ``;
+        msg += `╮───────∙⋆⋅ ※ ⋅⋆∙───────╭\n`; 
+        msg += `    قـــائــمــة اوامـــــر APLIN\n`; 
+        msg += `╯───────∙⋆⋅ ※ ⋅⋆∙───────╰\n\n`; 
+
+        // إضافة قسم التوقيت والمعلومات الزمنية بتصميم أنيق متناسق
+        msg += `╮────∙⋆⋅「 التوقيت والنشاط 」\n`;
+        msg += `│ › التاريخ : ${dateStr} (${dayStr})\n`;
+        msg += `│ › الوقت : ${timeStr} ⟜ النشاط: ${clockStr}\n`;
+        msg += `╯───────∙⋆⋅ ※ ⋅⋆∙───────◈\n\n`;
 
         for (const category of orderedCats) {
             const cmds = categories[category];
@@ -108,19 +114,25 @@ module.exports = {
             const adminList = config.adminUIDs || [];
             if (category === "المطور" && !adminList.includes(senderID)) continue;
 
-            msg += `​❆˹┊ ⟬ قـسم ${category} ⟭\n`;
+            msg += `╮────∙⋆⋅「 ${category} 」\n`;
+            
+            let commandLines = [];
             for (let i = 0; i < cmds.length; i += 3) {
-                const row = cmds.slice(i, i + 3).map(c => `◍ ${c}`).join(" ");
-                msg += `​❆˹┊ ${row}\n`;
+                const chunk = cmds.slice(i, i + 3);
+                commandLines.push("│ › " + chunk.join('  ›  '));
             }
-            msg += `​❆˹┊ ⸻⸻⸻⸻⸻\n`;
+            msg += commandLines.join('\n') + '\n';
+            msg += `╯───────∙⋆⋅ ※ ⋅⋆∙───────◈\n\n`;
         }
         
-        msg += `╯──────────────⟢ـ\n`;
-        msg += `┊˼📖˹┊ الإجمالي ↜ ${uniqueCommands.length} أمر\n`;
-        msg += `┊˼🪸˹┊ SINKO | ✅`;
+        msg += `╮───────∙⋆⋅ ※ ⋅⋆∙───────◈\n`;
+        msg += `│ إجمالي الأوامر : ${uniqueCommands.length}\n`;
+        msg += `│ الــبــوت : APLIN\n`;
+        msg += `│ الــمــالــك : سينكو | SINKO\n`;
+        msg += `│ اسـتـخــدم : اوامر [اسم الامر] `; 
+        msg += `╯───────∙⋆⋅ ※ ⋅⋆∙───────◈`;
 
-        // إرسال النص مباشرة بدون صورة
+        // إرسال النص مباشرة
         return api.sendMessage(msg, threadID, messageID);
     }
 };

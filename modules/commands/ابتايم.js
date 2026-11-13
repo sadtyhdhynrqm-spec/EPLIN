@@ -10,12 +10,12 @@ module.exports = {
   config: {
     name: 'ابتايم',
     aliases: ['uptime', 'up', 'stats'],
-    version: '3.1.0',
-    author: 'SINKO',
+    version: '3.2.0',
+    author: 'سينكو',
     description: 'عرض حالة النظام بالزخرفة الملكية (للمطور)',
     countDown: 5,
     prefix: true,
-    category: 'utility',
+    category: 'الخدمات السريعة',
     adminOnly: true 
   },
 
@@ -65,28 +65,30 @@ module.exports = {
         threadCount = threadList.length;
       } catch (e) {}
 
-      // بناء الرسالة بالزخرفة الملكية المطلوبة
-      const message = `> ˼⏰˹↜ حـالـة الـنـظـام ↶
-╮──────────────⟢ـ
-┆˼🧭˹┊ الـتـاريـخ ↜｢ ${fullDate} ｣
-┆˼⚕️˹┊ الـيـوم ↜｢ ${dayName} ｣
-┆˼🕕˹┊ الـوقـت ↜｢ ${timeStr} ｣
-┆˼🚀˹┊ الـبـنـغ ↜｢ ${ping}ms ｣
-╯──────────────⟢ـ
-> ˼🌌˹↜ إحـصـائـيـات ابلين ↶
-╮──────────────⟢ـ
-┆˼⏳˹┊ الـتـشـغـيل ↜｢ ${days}يوم و ${hours}س و ${minutes}د ｣
-┆˼👥˹┊ الـمـجـموعات ↜｢ ${threadCount} ｣
-┆˼🧠˹┊ الـرام الـمستخدم ↜｢ ${ramUsage}MB ｣
-┆˼📂˹┊ إجـمـالي الـرام ↜｢ ${totalRam}GB ｣
-╯──────────────⟢ـ
-> ˼🖥️˹↜ مـعـلـومـات الـسـيـرفـر ↶
-╮──────────────⟢ـ
-┆˼❄️˹┊ الـنـظـام ↜｢ ${os.type()} ｣
-┆˼𖣔˹┊ الـمـعـالـج ↜｢ ${os.cpus()[0].model.split(' ')[0]} ｣
-┆˼✅˹┊ الـحـالـة ↜｢ مـتـصل بنجاح ｣
-╯──────────────⟢ـ
-> ˼👤˹┊ الـمـطـوࢪ : SINKO ↶`;
+      // بناء الرسالة بالزخرفة الجديدة المتناسقة
+      let message = ``;
+      message += `╮───────∙⋆⋅ ※ ⋅⋆∙───────╭\n`; 
+      message += `    حــــالــــة الــــنــــظــــام\n`; 
+      message += `╯───────∙⋆⋅ ※ ⋅⋆∙───────╰\n\n`; 
+
+      message += `╮────∙⋆⋅「 التوقيت والنشاط 」\n`;
+      message += `│ › التاريخ : ${fullDate} (${dayName})\n`;
+      message += `│ › الوقت : ${timeStr}\n`;
+      message += `│ › البنج : ${ping}ms\n`;
+      message += `╯───────∙⋆⋅ ※ ⋅⋆∙───────◈\n\n`;
+
+      message += `╮────∙⋆⋅「 إحصائيات ابلين 」\n`;
+      message += `│ › التشغيل : ${days}يوم و ${hours}س و ${minutes}د\n`;
+      message += `│ › المجموعات : ${threadCount}\n`;
+      message += `│ › الرام المستخدم : ${ramUsage}MB\n`;
+      message += `│ › إجمالي الرام : ${totalRam}GB\n`;
+      message += `╯───────∙⋆⋅ ※ ⋅⋆∙───────◈\n\n`;
+
+      message += `╮────∙⋆⋅「 معلومات السيرفر 」\n`;
+      message += `│ › النظام : ${os.type()}\n`;
+      message += `│ › المعالج : ${os.cpus()[0].model.split(' ')[0]}\n`;
+      message += `│ › الحالة : متصل بنجاح ✅\n`;
+      message += `╯───────∙⋆⋅ ※ ⋅⋆∙───────◈`;
 
       // 2. تعديل الرسالة السابقة بالتقرير النهائي
       await api.editMessage(message, initialMsg.messageID);

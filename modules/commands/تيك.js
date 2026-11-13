@@ -5,18 +5,27 @@ const path = require("path");
 module.exports = {
   config: {
     name: "تيك",
-    version: "1.0.7",
-    author: "SINKO",
+    version: "1.0.9",
+    author: "سينكو",
     countDown: 5,
     prefix: false,
-    category: "media" // تم تعديل الفئة ليتوافق مع فئاتك الـ 4 الأساسية
+    category: "الوسائط"
   },
 
   onStart: async function ({ api, event, args }) {
     const { threadID, messageID, senderID } = event;
     const query = args.join(" ").trim();
     
-    if (!query) return api.sendMessage("╮──────────────⟢ـ\n┆˼⚠️˹┊ يـرجـى كـتـابـة كـلـمـة بـحـث\n╯──────────────⟢ـ", threadID, messageID);
+    if (!query) {
+      let errMsg = ``;
+      errMsg += `╮────∙⋆⋅「 تنبيه 」⋅⋆∙────╭\n`;
+      errMsg += `│\n`;
+      errMsg += `│  ⚠️ يـرجـى كـتـابـة كـلـمـة بـحـث\n`;
+      errMsg += `│  ◈ الاستخدام : تيك [البحث]\n`;
+      errMsg += `│\n`;
+      errMsg += `╯───────∙⋆⋅ ※ ⋅⋆∙───────╰`;
+      return api.sendMessage(errMsg, threadID, messageID);
+    }
 
     api.setMessageReaction("⌛", messageID, () => {}, true);
 
@@ -25,20 +34,33 @@ module.exports = {
       const data = res.data.list || [];
       
       if (data.length === 0) {
-        return api.sendMessage("╮──────────────⟢ـ\n┆˼❌˹┊ لـم يـتـم الـعـثـور عـلـى نـتـائـج\n╯──────────────⟢ـ", threadID, messageID);
+        let notFoundMsg = ``;
+        notFoundMsg += `╮────∙⋆⋅「 خطأ 」⋅⋆∙────╭\n`;
+        notFoundMsg += `│\n`;
+        notFoundMsg += `│  ❌ لـم يـتـم الـعـثـور عـلـى نـتـائـج\n`;
+        notFoundMsg += `│  ◈ للبحث : ${query}\n`;
+        notFoundMsg += `│\n`;
+        notFoundMsg += `╯───────∙⋆⋅ ※ ⋅⋆∙───────╰`;
+        return api.sendMessage(notFoundMsg, threadID, messageID);
       }
 
       await sendPage(api, event, data, 1, query);
 
     } catch (err) {
-      api.sendMessage("╮──────────────⟢ـ\n┆˼❌˹┊ حـدث خـطأ فـي الـسـيـرفـر\n╯──────────────⟢ـ", threadID, messageID);
+      let serverErr = ``;
+      serverErr += `╮────∙⋆⋅「 خطأ في السيرفر 」⋅⋆∙────╭\n`;
+      serverErr += `│\n`;
+      serverErr += `│  ❌ حـدث خـطأ أثـنـاء جـلـب الـنـتـائـج\n`;
+      serverErr += `│\n`;
+      serverErr += `╯───────∙⋆⋅ ※ ⋅⋆∙───────╰`;
+      api.sendMessage(serverErr, threadID, messageID);
     }
   },
 
   onReply: async function ({ api, event, handleReply }) {
     const { threadID, messageID, body, senderID } = event;
     
-    // التحقق من أن المستخدم الحالي هو صاحب طلب البحث الأساسي (نفس منطق ابلين)
+    // التحقق من أن المستخدم الحالي هو صاحب طلب البحث الأساسي
     if (handleReply.author && senderID !== handleReply.author) return;
 
     // التأكد من أن الرد موجه لملف التيكتوك هذا
@@ -46,13 +68,19 @@ module.exports = {
 
     const input = body.trim().toLowerCase();
 
-    // إصلاح منطق التنقل بين الصفحات
+    // التنقل بين الصفحات
     if (input === "التالي" || input === "next") {
       const nextPage = handleReply.page + 1;
       const maxPage = Math.ceil(handleReply.results.length / 12);
       
       if (nextPage > maxPage) {
-        return api.sendMessage("╮──────────────⟢ـ\n┆˼🔚˹┊ لا تـوجـد صـفـحـات أخـرى\n╯──────────────⟢ـ", threadID, messageID);
+        let maxPageMsg = ``;
+        maxPageMsg += `╮────∙⋆⋅「 تنبيه 」⋅⋆∙────╭\n`;
+        maxPageMsg += `│\n`;
+        maxPageMsg += `│  🔚 لا تـوجـد صـفـحـات أخـرى\n`;
+        maxPageMsg += `│\n`;
+        maxPageMsg += `╯───────∙⋆⋅ ※ ⋅⋆∙───────╰`;
+        return api.sendMessage(maxPageMsg, threadID, messageID);
       }
       
       try { api.unsendMessage(handleReply.messageID); } catch(e) {}
@@ -69,7 +97,6 @@ module.exports = {
     try { api.unsendMessage(handleReply.messageID); } catch(e) {}
     api.setMessageReaction("📥", messageID, () => {}, true);
 
-    // تأكد من وجود مجلد الكاش
     const cacheDir = path.join(__dirname, "cache");
     fs.ensureDirSync(cacheDir);
 
@@ -82,8 +109,16 @@ module.exports = {
       videoRes.data.pipe(writer);
 
       writer.on('finish', () => {
+        let successMsg = ``;
+        successMsg += `╮────∙⋆⋅「 تحميل ناجح 」⋅⋆∙────╭\n`;
+        successMsg += `│\n`;
+        successMsg += `│  ◈ العـنـوان : ${selected.title ? selected.title.slice(0, 45) + "..." : "بدون عنوان"}\n`;
+        successMsg += `│  ◈ الـحـالـة : تم القنص بنجاح ✅\n`;
+        successMsg += `│\n`;
+        successMsg += `╯───────∙⋆⋅ ※ ⋅⋆∙───────╰`;
+
         api.sendMessage({
-          body: `> ˼✅˹↜ تـم الـقـنـص بـنـجـاح\n╮──────────────⟢ـ\n┆˼📝˹┊ الـعـنـوان ↶\n┆ « ${selected.title || "بدون عنوان"} »\n╯──────────────⟢ـ\n┊˼🪸˹┊ SINKO | ✅`,
+          body: successMsg,
           attachment: fs.createReadStream(filePath)
         }, threadID, () => {
           try { fs.unlinkSync(filePath); } catch (e) {}
@@ -91,11 +126,11 @@ module.exports = {
       });
 
       writer.on('error', () => {
-        api.sendMessage("╮──────────────⟢ـ\n┆˼❌˹┊ خـطأ أثـنـاء كـتـابـة الـمـلـف\n╯──────────────⟢ـ", threadID, messageID);
+        api.sendMessage("❌ خطأ أثناء كتابة ملف الفيديو.", threadID, messageID);
       });
 
     } catch (err) {
-      api.sendMessage("╮──────────────⟢ـ\n┆˼❌˹┊ فـشـل تـحـمـيـل الـفـيـديـو\n╯──────────────⟢ـ", threadID, messageID);
+      api.sendMessage("❌ فشل تحميل الفيديو من الرابط.", threadID, messageID);
     }
   }
 };
@@ -105,26 +140,34 @@ async function sendPage(api, event, allResults, page, query) {
   const start = (page - 1) * 12;
   const pageResults = allResults.slice(start, start + 12);
 
-  let msg = `> ˼🎬˹↜ نـتـائـج تـكـتـوك ↶\n╮──────────────⟢ـ\n`;
-  msg += `┆˼🔍˹┊ الـبـحـث ↜｢ ${query} ｣\n`;
-  msg += `┆˼📄˹┊ الـصـفـحـة ↜｢ ${page} ｣\n`;
-  msg += `╯──────────────⟢ـ\n`;
+  let msg = ``;
+  msg += `╮───────∙⋆⋅ ※ ⋅⋆∙───────╭\n`; 
+  msg += `    نــتــائــج بــحــث تــيــك تــوك\n`; 
+  msg += `╯───────∙⋆⋅ ※ ⋅⋆∙───────╰\n\n`; 
 
+  msg += `╮────∙⋆⋅「 معلومات البحث 」\n`;
+  msg += `│ › الكلمة : ${query}\n`;
+  msg += `│ › الصفحة : ${page} من ${Math.ceil(allResults.length / 12)}\n`;
+  msg += `╯───────∙⋆⋅ ※ ⋅⋆∙───────◈\n\n`;
+
+  msg += `╮────∙⋆⋅「 قائمة الفيديوهات 」\n`;
   pageResults.forEach((v, i) => {
-    msg += `​  ❆˹${i + 1}˼┊ ${v.title?.slice(0, 35) || "فيديو تكتوك"}...\n`;
+    const num = (i + 1).toString().padStart(2, '0');
+    const title = v.title ? v.title.slice(0, 30) + "..." : "فيديو تيك توك";
+    msg += `│ › [ ${num} ] ⟜ ${title}\n`;
   });
+  msg += `╯───────∙⋆⋅ ※ ⋅⋆∙───────◈\n\n`;
 
-  msg += `╮──────────────⟢ـ\n`;
-  msg += `┆˼💡˹┊ رد بـرقـم الـفـيـديـو لـلـتـحـمـيـل\n`;
-  msg += `┆˼➡️˹┊ أرسـل "التالي" لـلـمـزيـد\n`;
-  msg += `╯──────────────⟢ـ\n`;
-  msg += `┊˼🪸˹┊ SINKO | ✅`;
+  msg += `╮───────∙⋆⋅ ※ ⋅⋆∙───────◈\n`;
+  msg += `│ 💡 رد برقم الفيديو للتحميل المباشر\n`;
+  msg += `│ ➡️ أرسل "التالي" لعرض المزيد\n`;
+  msg += `╯───────∙⋆⋅ ※ ⋅⋆∙───────◈`;
 
   return api.sendMessage(msg, threadID, (err, info) => {
     if (!err) {
       if (!global.client.handleReply) global.client.handleReply = [];
       global.client.handleReply.push({
-        name: "تيك", // تم توحيده ليكون متطابقاً مع اسم الموديل الأساسي في الكونسول
+        name: "تيك",
         messageID: info.messageID,
         author: senderID,
         results: allResults,
